@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPSゲーム作成手順ガイド</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;600;700;900&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f0f1a;--card:#1a1a2e;--card2:#16213e;--accent:#00d4ff;--accent2:#7c3aed;--accent3:#f59e0b;--text:#e2e8f0;--text2:#94a3b8;--green:#22c55e;--red:#ef4444;--border:#2d2d44}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);line-height:1.8;overflow-x:hidden}
+.hero{position:relative;min-height:60vh;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#0f0f1a 0%,#1a1a2e 30%,#16213e 60%,#0f0f1a 100%);overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(0,212,255,.15),transparent 50%),radial-gradient(circle at 70% 50%,rgba(124,58,237,.15),transparent 50%)}
+.hero-content{position:relative;z-index:1;padding:2rem}
+.hero h1{font-size:3.5rem;font-weight:900;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem;letter-spacing:-.02em}
+.hero p{font-size:1.2rem;color:var(--text2);max-width:600px;margin:0 auto}
+.hero .badge{display:inline-block;background:rgba(0,212,255,.15);border:1px solid rgba(0,212,255,.3);color:var(--accent);padding:.3rem 1rem;border-radius:50px;font-size:.85rem;margin-bottom:1.5rem}
+.container{max-width:960px;margin:0 auto;padding:0 1.5rem 4rem}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;margin:2rem 0}
+.toc h2{font-size:1.3rem;margin-bottom:1rem;color:var(--accent)}
+.toc ol{padding-left:1.5rem}
+.toc li{margin:.4rem 0}
+.toc a{color:var(--text2);text-decoration:none;transition:color .2s}
+.toc a:hover{color:var(--accent)}
+.phase{margin:3rem 0}
+.phase-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:2px solid var(--border)}
+.phase-num{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:900;font-size:1.1rem;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.phase-header h2{font-size:1.6rem;font-weight:700}
+.step{background:var(--card);border:1px solid var(--border);border-radius:12px;margin:1rem 0;overflow:hidden;transition:border-color .3s}
+.step:hover{border-color:rgba(0,212,255,.4)}
+.step-head{display:flex;align-items:center;gap:.75rem;padding:1rem 1.25rem;cursor:pointer;user-select:none}
+.step-head .num{background:var(--card2);color:var(--accent);font-family:'Fira Code',monospace;font-size:.8rem;font-weight:600;padding:.25rem .6rem;border-radius:6px;flex-shrink:0}
+.step-head h3{font-size:1rem;font-weight:600;flex:1}
+.tag{font-size:.7rem;padding:.2rem .55rem;border-radius:4px;font-weight:600;flex-shrink:0}
+.tag-code{background:rgba(0,212,255,.15);color:var(--accent)}
+.tag-user{background:rgba(245,158,11,.15);color:var(--accent3)}
+.tag-done{background:rgba(34,197,94,.15);color:var(--green)}
+.tag-todo{background:rgba(239,68,68,.15);color:var(--red)}
+.step-body{padding:0 1.25rem 1.25rem;display:none}
+.step.open .step-body{display:block}
+.step-body ul{padding-left:1.2rem;margin:.5rem 0}
+.step-body li{margin:.35rem 0;color:var(--text2);font-size:.92rem}
+.step-body li strong{color:var(--text)}
+pre{background:#0d0d1a;border:1px solid var(--border);border-radius:8px;padding:1rem;overflow-x:auto;margin:.75rem 0;font-family:'Fira Code',monospace;font-size:.82rem;line-height:1.7;color:#c9d1d9}
+.kw{color:#ff7b72}.tp{color:#79c0ff}.fn{color:#d2a8ff}.st{color:#a5d6ff}.cm{color:#8b949e}.num{color:var(--accent3)}
+.info-box{background:rgba(0,212,255,.08);border-left:3px solid var(--accent);padding:.75rem 1rem;border-radius:0 8px 8px 0;margin:.75rem 0;font-size:.88rem;color:var(--text2)}
+.warn-box{background:rgba(245,158,11,.08);border-left:3px solid var(--accent3);padding:.75rem 1rem;border-radius:0 8px 8px 0;margin:.75rem 0;font-size:.88rem;color:var(--text2)}
+.legend{display:flex;gap:1.5rem;flex-wrap:wrap;margin:2rem 0;padding:1.25rem;background:var(--card);border-radius:12px;border:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--text2)}
+.progress-bar{background:var(--card2);border-radius:8px;height:8px;margin:1rem 0;overflow:hidden}
+.progress-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s}
+footer{text-align:center;padding:2rem;color:var(--text2);font-size:.8rem;border-top:1px solid var(--border);margin-top:3rem}
+@media(max-width:640px){.hero h1{font-size:2rem}.phase-header h2{font-size:1.2rem}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<div class="hero-content">
+<div class="badge">Unity × C# 中学生向け入門教材</div>
+<h1>🔫 FPSゲーム作成手順</h1>
+<p>シンプルなFPSゲームをステップバイステップで構築するガイドです。各フェーズを順番に進めていきましょう。</p>
+</div>
+</div>
+
+<div class="container">
+
+<div class="legend">
+<div class="legend-item"><span class="tag tag-code">CODE</span> スクリプト作成</div>
+<div class="legend-item"><span class="tag tag-user">USER</span> Unity操作</div>
+<div class="legend-item"><span class="tag tag-done">済</span> 実装済み</div>
+<div class="legend-item"><span class="tag tag-todo">未</span> 未着手</div>
+</div>
+
+<div class="toc">
+<h2>📋 目次</h2>
+<ol>
+<li><a href="#phase1">Phase 1: プロジェクト初期設定</a></li>
+<li><a href="#phase2">Phase 2: プレイヤー基本機能</a></li>
+<li><a href="#phase3">Phase 3: 武器・射撃システム</a></li>
+<li><a href="#phase4">Phase 4: ヘルス・ダメージシステム</a></li>
+<li><a href="#phase5">Phase 5: 敵キャラクター・AI</a></li>
+<li><a href="#phase6">Phase 6: ゲーム管理・UI</a></li>
+<li><a href="#phase7">Phase 7: 統合テスト・調整</a></li>
+</ol>
+</div>
+
+<!-- ========== Phase 1 ========== -->
+<div class="phase" id="phase1">
+<div class="phase-header">
+<div class="phase-num">1</div>
+<h2>プロジェクト初期設定</h2>
+</div>
+
+<div class="step open">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">1-1</span><h3>フォルダ構成の整備</h3><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">スクリプトを機能ごとに分類するためのフォルダを作成します。</div>
+<ul>
+<li><strong>Assets/Scripts/Player/</strong> — プレイヤー関連スクリプト</li>
+<li><strong>Assets/Scripts/Enemy/</strong> — 敵AI関連</li>
+<li><strong>Assets/Scripts/Weapon/</strong> — 武器・弾関連</li>
+<li><strong>Assets/Scripts/Common/</strong> — 体力・ダメージなど共通処理</li>
+<li><strong>Assets/Scripts/UI/</strong> — UI関連</li>
+<li><strong>Assets/Scripts/GameManager/</strong> — ゲーム管理</li>
+<li><strong>Assets/Prefabs/</strong> — プレハブ保存用</li>
+</ul>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">1-2</span><h3>シーンの基本構成</h3><span class="tag tag-user">USER</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<ul>
+<li><strong>MainGame</strong> シーンに床（Plane）を配置</li>
+<li>障害物（Cube等）をいくつか配置</li>
+<li>Directional Light でライティング設定</li>
+</ul>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">1-3</span><h3>NavMesh の設定</h3><span class="tag tag-user">USER</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="warn-box">⚠️ AI Navigation パッケージのインストールが必要です</div>
+<ul>
+<li><strong>Window &gt; Package Manager &gt; Unity Registry &gt; AI Navigation &gt; Install</strong></li>
+<li>床オブジェクトに <strong>NavMeshSurface</strong> コンポーネントを追加</li>
+<li>NavMeshSurface の <strong>Bake</strong> ボタンを押してNavMeshを焼く</li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- ========== Phase 2 ========== -->
+<div class="phase" id="phase2">
+<div class="phase-header">
+<div class="phase-num">2</div>
+<h2>プレイヤー基本機能</h2>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">2-1</span><h3>プレイヤーオブジェクトの作成</h3><span class="tag tag-user">USER</span><span class="tag tag-todo">未</span>
+</div>
+<div class="step-body">
+<ul>
+<li>シーンに空のGameObjectを作成し <strong>「Player」</strong> と命名</li>
+<li>Player に <strong>CharacterController</strong> コンポーネントをアタッチ</li>
+<li>Player の子オブジェクトとして <strong>Main Camera</strong> を配置（FPS視点用）</li>
+<li>CharacterController の <strong>Radius</strong>, <strong>Height</strong> を適切に調整</li>
+</ul>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">2-2</span><h3>移動スクリプト — PlayerMovement.cs</h3><span class="tag tag-code">CODE</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">WASD移動 + ジャンプ + 重力処理を実装します。New Input System のポーリング方式に対応。</div>
+<p><strong>保存先:</strong> <code>Assets/Scripts/Player/PlayerMovement.cs</code></p>
+<pre><span class="kw">public class</span> <span class="tp">PlayerMovement</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="cm">// フィールド定義</span>
+    <span class="kw">public float</span> moveSpeed = <span class="num">5f</span>;
+    <span class="kw">public float</span> jumpForce = <span class="num">5f</span>;
+    <span class="kw">public float</span> gravity = <span class="num">-9.81f</span>;
+    <span class="kw">private</span> <span class="tp">Vector3</span> velocity;
+    <span class="kw">private</span> <span class="tp">CharacterController</span> controller;
+
+    <span class="kw">void</span> <span class="fn">Start</span>() {
+        controller = <span class="fn">GetComponent</span>&lt;<span class="tp">CharacterController</span>&gt;();
+    }
+
+    <span class="kw">void</span> <span class="fn">Update</span>() {
+        <span class="cm">// WASD入力</span>
+        <span class="kw">float</span> x = <span class="tp">Input</span>.<span class="fn">GetAxis</span>(<span class="st">"Horizontal"</span>);
+        <span class="kw">float</span> z = <span class="tp">Input</span>.<span class="fn">GetAxis</span>(<span class="st">"Vertical"</span>);
+        <span class="tp">Vector3</span> move = transform.right * x + transform.forward * z;
+
+        <span class="cm">// 接地判定 &amp; ジャンプ</span>
+        <span class="kw">if</span> (controller.isGrounded &amp;&amp; velocity.y &lt; <span class="num">0</span>)
+            velocity.y = <span class="num">-2f</span>;
+        <span class="kw">if</span> (<span class="tp">Input</span>.<span class="fn">GetButtonDown</span>(<span class="st">"Jump"</span>) &amp;&amp; controller.isGrounded)
+            velocity.y = jumpForce;
+
+        <span class="cm">// 重力適用 &amp; 移動</span>
+        velocity.y += gravity * <span class="tp">Time</span>.deltaTime;
+        controller.<span class="fn">Move</span>((move * moveSpeed + velocity) * <span class="tp">Time</span>.deltaTime);
+    }
+}</pre>
+<div class="warn-box">🔧 <strong>User操作:</strong> Player オブジェクトに <code>PlayerMovement.cs</code> をアタッチ</div>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">2-3</span><h3>視点操作スクリプト — MouseLook.cs</h3><span class="tag tag-code">CODE</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">マウスによるFPS視点操作。垂直方向は-90°～90°にクランプします。</div>
+<p><strong>保存先:</strong> <code>Assets/Scripts/Player/MouseLook.cs</code></p>
+<pre><span class="kw">public class</span> <span class="tp">MouseLook</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="kw">public float</span> mouseSensitivity = <span class="num">100f</span>;
+    <span class="kw">public</span> <span class="tp">Transform</span> playerBody;
+    <span class="kw">private float</span> xRotation = <span class="num">0f</span>;
+
+    <span class="kw">void</span> <span class="fn">Start</span>() {
+        <span class="tp">Cursor</span>.lockState = <span class="tp">CursorLockMode</span>.Locked;
+    }
+
+    <span class="kw">void</span> <span class="fn">Update</span>() {
+        <span class="kw">float</span> mouseX = <span class="tp">Input</span>.<span class="fn">GetAxis</span>(<span class="st">"Mouse X"</span>) * mouseSensitivity * <span class="tp">Time</span>.deltaTime;
+        <span class="kw">float</span> mouseY = <span class="tp">Input</span>.<span class="fn">GetAxis</span>(<span class="st">"Mouse Y"</span>) * mouseSensitivity * <span class="tp">Time</span>.deltaTime;
+
+        xRotation -= mouseY;
+        xRotation = <span class="tp">Mathf</span>.<span class="fn">Clamp</span>(xRotation, <span class="num">-90f</span>, <span class="num">90f</span>);
+
+        transform.localRotation = <span class="tp">Quaternion</span>.<span class="fn">Euler</span>(xRotation, <span class="num">0f</span>, <span class="num">0f</span>);
+        playerBody.<span class="fn">Rotate</span>(<span class="tp">Vector3</span>.up * mouseX);
+    }
+}</pre>
+<div class="warn-box">🔧 <strong>User操作:</strong> Main Camera に <code>MouseLook.cs</code> をアタッチし、Inspector で PlayerBody に Player をセット</div>
+</div>
+</div>
+</div>
+
+<!-- ========== Phase 3 ========== -->
+<div class="phase" id="phase3">
+<div class="phase-header">
+<div class="phase-num">3</div>
+<h2>武器・射撃システム</h2>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">3-1</span><h3>弾の作成 — Bullet.cs</h3><span class="tag tag-code">CODE</span><span class="tag tag-user">USER</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">Projectile（物理弾）方式。一定時間で消滅し、衝突時にダメージを与えます。</div>
+<p><strong>保存先:</strong> <code>Assets/Scripts/Weapon/Bullet.cs</code></p>
+<pre><span class="kw">public class</span> <span class="tp">Bullet</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="kw">public float</span> speed = <span class="num">40f</span>;
+    <span class="kw">public float</span> lifetime = <span class="num">3f</span>;
+    <span class="kw">public int</span> damage = <span class="num">10</span>;
+
+    <span class="kw">void</span> <span class="fn">Start</span>() {
+        <span class="fn">GetComponent</span>&lt;<span class="tp">Rigidbody</span>&gt;().velocity = transform.forward * speed;
+        <span class="fn">Destroy</span>(gameObject, lifetime);
+    }
+
+    <span class="kw">void</span> <span class="fn">OnTriggerEnter</span>(<span class="tp">Collider</span> other) {
+        <span class="tp">Health</span> health = other.<span class="fn">GetComponent</span>&lt;<span class="tp">Health</span>&gt;();
+        <span class="kw">if</span> (health != <span class="kw">null</span>) health.<span class="fn">TakeDamage</span>(damage);
+        <span class="fn">Destroy</span>(gameObject);
+    }
+}</pre>
+<div class="warn-box">🔧 <strong>User操作:</strong><br>
+① Sphere を作成 →「Bullet」と命名<br>
+② Rigidbody をアタッチ（Use Gravity = false）<br>
+③ Collider の Is Trigger = true に設定<br>
+④ Bullet.cs をアタッチ<br>
+⑤ Assets/Prefabs/ にドラッグしてプレハブ化 → シーンから削除</div>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">3-2</span><h3>銃スクリプト — Gun.cs</h3><span class="tag tag-code">CODE</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">弾数管理、リロード、マズルフラッシュ演出を含む汎用銃スクリプト。プレイヤーと敵の両方で使用します。</div>
+<p><strong>保存先:</strong> <code>Assets/Scripts/Weapon/Gun.cs</code></p>
+<pre><span class="kw">public class</span> <span class="tp">Gun</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="kw">public</span> <span class="tp">GameObject</span> bulletPrefab;
+    <span class="kw">public</span> <span class="tp">Transform</span> firePoint;
+    <span class="kw">public</span> <span class="tp">ParticleSystem</span> muzzleFlash;  <span class="cm">// マズルフラッシュ</span>
+    <span class="kw">public int</span> maxAmmo = <span class="num">30</span>;
+    <span class="kw">public int</span> currentAmmo;
+    <span class="kw">public float</span> reloadTime = <span class="num">3f</span>;
+    <span class="kw">public bool</span> isReloading = <span class="kw">false</span>;
+
+    <span class="kw">void</span> <span class="fn">Start</span>() { currentAmmo = maxAmmo; }
+
+    <span class="kw">public void</span> <span class="fn">Shoot</span>() {
+        <span class="kw">if</span> (isReloading || currentAmmo &lt;= <span class="num">0</span>) <span class="kw">return</span>;
+        <span class="fn">Instantiate</span>(bulletPrefab, firePoint.position, firePoint.rotation);
+        currentAmmo--;
+        <span class="kw">if</span> (muzzleFlash != <span class="kw">null</span>) muzzleFlash.<span class="fn">Play</span>();
+    }
+
+    <span class="kw">public</span> <span class="tp">IEnumerator</span> <span class="fn">Reload</span>() {
+        <span class="kw">if</span> (isReloading || currentAmmo == maxAmmo) <span class="kw">yield break</span>;
+        isReloading = <span class="kw">true</span>;
+        <span class="kw">yield return new</span> <span class="tp">WaitForSeconds</span>(reloadTime);
+        currentAmmo = maxAmmo;
+        isReloading = <span class="kw">false</span>;
+    }
+}</pre>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">3-3</span><h3>プレイヤー射撃連携 — PlayerShooting.cs</h3><span class="tag tag-code">CODE</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<p><strong>保存先:</strong> <code>Assets/Scripts/Player/PlayerShooting.cs</code></p>
+<pre><span class="kw">public class</span> <span class="tp">PlayerShooting</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="kw">public</span> <span class="tp">Gun</span> gun;
+
+    <span class="kw">void</span> <span class="fn">Update</span>() {
+        <span class="kw">if</span> (<span class="tp">Input</span>.<span class="fn">GetButtonDown</span>(<span class="st">"Fire1"</span>))
+            gun.<span class="fn">Shoot</span>();
+        <span class="kw">if</span> (<span class="tp">Input</span>.<span class="fn">GetKeyDown</span>(<span class="tp">KeyCode</span>.R))
+            <span class="fn">StartCoroutine</span>(gun.<span class="fn">Reload</span>());
+    }
+}</pre>
+<div class="warn-box">🔧 <strong>User操作:</strong><br>
+① Player（またはカメラの子）に空のGameObject「FirePoint」を作成し銃口位置に配置<br>
+② Player に Gun.cs と PlayerShooting.cs をアタッチ<br>
+③ Inspector で bulletPrefab / firePoint / muzzleFlash をセット</div>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">3-4</span><h3>マズルフラッシュ演出の追加</h3><span class="tag tag-user">USER</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">Gun.cs に組み込み済み。パーティクルシステムを作成してセットします。</div>
+<ul>
+<li>FirePoint の子に <strong>Particle System</strong> を作成</li>
+<li>Duration: <strong>0.1s</strong>、Looping: <strong>OFF</strong></li>
+<li>Start Lifetime: <strong>0.05〜0.1</strong></li>
+<li>Start Size: <strong>0.3〜0.5</strong></li>
+<li>Start Color: <strong>オレンジ〜黄色</strong></li>
+<li>Shape: <strong>Sphere</strong></li>
+<li>Play On Awake: <strong>OFF</strong></li>
+</ul>
+</div>
+</div>
+</div>
+
+<!-- ========== Phase 4 ========== -->
+<div class="phase" id="phase4">
+<div class="phase-header">
+<div class="phase-num">4</div>
+<h2>ヘルス・ダメージシステム</h2>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">4-1</span><h3>体力管理スクリプト — Health.cs</h3><span class="tag tag-code">CODE</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">PlayerとEnemy両方に使える共通の体力管理スクリプト。死亡時の処理はTagで分岐します。</div>
+<p><strong>保存先:</strong> <code>Assets/Scripts/Common/Health.cs</code></p>
+<pre><span class="kw">public class</span> <span class="tp">Health</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="kw">public int</span> maxHealth = <span class="num">100</span>;
+    <span class="kw">public int</span> currentHealth;
+
+    <span class="kw">void</span> <span class="fn">Start</span>() { currentHealth = maxHealth; }
+
+    <span class="kw">public void</span> <span class="fn">TakeDamage</span>(<span class="kw">int</span> amount) {
+        currentHealth -= amount;
+        <span class="kw">if</span> (currentHealth &lt;= <span class="num">0</span>) <span class="fn">Die</span>();
+    }
+
+    <span class="kw">void</span> <span class="fn">Die</span>() {
+        <span class="kw">if</span> (gameObject.tag == <span class="st">"Player"</span>)
+            <span class="tp">GameManager</span>.Instance.<span class="fn">GameOver</span>();
+        <span class="kw">else</span>
+            <span class="fn">Destroy</span>(gameObject);
+    }
+}</pre>
+<div class="warn-box">🔧 <strong>User操作:</strong><br>
+① Player の Tag を「Player」に設定<br>
+② Player と Enemy の両方に Health.cs をアタッチ</div>
+</div>
+</div>
+</div>
+
+<!-- ========== Phase 5 ========== -->
+<div class="phase" id="phase5">
+<div class="phase-header">
+<div class="phase-num">5</div>
+<h2>敵キャラクター・AI</h2>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">5-1</span><h3>敵オブジェクトの作成</h3><span class="tag tag-user">USER</span><span class="tag tag-todo">未</span>
+</div>
+<div class="step-body">
+<ul>
+<li>シーンに <strong>Capsule</strong> 等を作成し「Enemy」と命名</li>
+<li>Enemy に <strong>NavMeshAgent</strong> コンポーネントをアタッチ</li>
+<li>適切な Collider が付いていることを確認</li>
+</ul>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">5-2</span><h3>敵AIスクリプト — EnemyAI.cs</h3><span class="tag tag-code">CODE</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">NavMeshAgent でプレイヤーを追跡。攻撃範囲内で自動攻撃＋自動リロード。</div>
+<p><strong>保存先:</strong> <code>Assets/Scripts/Enemy/EnemyAI.cs</code></p>
+<pre><span class="cm">[RequireComponent(typeof(Gun))]</span>
+<span class="kw">public class</span> <span class="tp">EnemyAI</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="kw">private</span> <span class="tp">NavMeshAgent</span> agent;
+    <span class="kw">private</span> <span class="tp">Transform</span> player;
+    <span class="kw">private</span> <span class="tp">Gun</span> gun;
+    <span class="kw">public float</span> attackRange = <span class="num">10f</span>;
+    <span class="kw">public float</span> attackInterval = <span class="num">1f</span>;
+    <span class="kw">private float</span> attackTimer = <span class="num">0f</span>;
+
+    <span class="kw">void</span> <span class="fn">Start</span>() {
+        agent = <span class="fn">GetComponent</span>&lt;<span class="tp">NavMeshAgent</span>&gt;();
+        gun = <span class="fn">GetComponent</span>&lt;<span class="tp">Gun</span>&gt;();
+        player = <span class="tp">GameObject</span>.<span class="fn">FindGameObjectWithTag</span>(<span class="st">"Player"</span>).transform;
+    }
+
+    <span class="kw">void</span> <span class="fn">Update</span>() {
+        agent.<span class="fn">SetDestination</span>(player.position);
+        <span class="kw">float</span> dist = <span class="tp">Vector3</span>.<span class="fn">Distance</span>(transform.position, player.position);
+
+        <span class="kw">if</span> (dist &lt;= attackRange) {
+            attackTimer += <span class="tp">Time</span>.deltaTime;
+            <span class="kw">if</span> (attackTimer &gt;= attackInterval) {
+                <span class="kw">if</span> (gun.currentAmmo &gt; <span class="num">0</span>)
+                    gun.<span class="fn">Shoot</span>();
+                <span class="kw">else</span>
+                    <span class="fn">StartCoroutine</span>(gun.<span class="fn">Reload</span>());
+                attackTimer = <span class="num">0f</span>;
+            }
+        }
+    }
+}</pre>
+<div class="warn-box">🔧 <strong>User操作:</strong><br>
+① Enemy の子に「FirePoint」を作成（プレイヤー方向を向くように配置）<br>
+② Enemy に Gun.cs と EnemyAI.cs をアタッチ → Inspector で各フィールド設定<br>
+③ 完成した Enemy を Assets/Prefabs/ にドラッグしてプレハブ化<br>
+④ シーンに複数体の敵を配置</div>
+</div>
+</div>
+</div>
+
+<!-- ========== Phase 6 ========== -->
+<div class="phase" id="phase6">
+<div class="phase-header">
+<div class="phase-num">6</div>
+<h2>ゲーム管理・UI</h2>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">6-1</span><h3>GameManager — GameManager.cs</h3><span class="tag tag-code">CODE</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">シングルトンパターンで実装。ゲームオーバー時に時間停止・カーソル解放・リスタート機能を提供。</div>
+<p><strong>保存先:</strong> <code>Assets/Scripts/GameManager/GameManager.cs</code></p>
+<pre><span class="kw">public class</span> <span class="tp">GameManager</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="kw">public static</span> <span class="tp">GameManager</span> Instance;
+    <span class="kw">public</span> <span class="tp">GameObject</span> gameOverPanel;
+
+    <span class="kw">void</span> <span class="fn">Awake</span>() { Instance = <span class="kw">this</span>; }
+
+    <span class="kw">public void</span> <span class="fn">GameOver</span>() {
+        gameOverPanel.<span class="fn">SetActive</span>(<span class="kw">true</span>);
+        <span class="tp">Time</span>.timeScale = <span class="num">0f</span>;
+        <span class="tp">Cursor</span>.lockState = <span class="tp">CursorLockMode</span>.None;
+    }
+
+    <span class="kw">public void</span> <span class="fn">RestartGame</span>() {
+        <span class="tp">Time</span>.timeScale = <span class="num">1f</span>;
+        <span class="tp">SceneManager</span>.<span class="fn">LoadScene</span>(<span class="tp">SceneManager</span>.<span class="fn">GetActiveScene</span>().name);
+    }
+}</pre>
+<div class="warn-box">🔧 <strong>User操作:</strong> シーンに空のGameObject「GameManager」を作成し GameManager.cs をアタッチ</div>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">6-2</span><h3>ゲームオーバーUI の作成</h3><span class="tag tag-user">USER</span><span class="tag tag-todo">未</span>
+</div>
+<div class="step-body">
+<ul>
+<li><strong>Canvas</strong> を作成</li>
+<li>Canvas 内に Panel 「<strong>GameOverPanel</strong>」を作成（初期状態で<strong>非アクティブ</strong>）</li>
+<li>Text 「Game Over」を中央に大きく配置</li>
+<li>Button 「リトライ」ボタンを配置</li>
+<li>リトライボタンの <strong>OnClick()</strong> に <code>GameManager.RestartGame()</code> を登録</li>
+<li>GameManager の Inspector で GameOverPanel をセット</li>
+</ul>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">6-3</span><h3>クロスヘア（照準）の作成</h3><span class="tag tag-user">USER</span><span class="tag tag-todo">未</span>
+</div>
+<div class="step-body">
+<ul>
+<li>Canvas 内に <strong>Image</strong> を作成し、サイズを <strong>10×10</strong> に設定</li>
+<li>色を <strong>赤</strong> や <strong>白</strong> などの目立つ色に設定</li>
+<li>RectTransform で <strong>中央（Center/Middle）に固定</strong></li>
+<li>着弾点がクロスヘア中心と一致するか調整</li>
+</ul>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">6-4</span><h3>HUD — HUDManager.cs（オプション）</h3><span class="tag tag-code">CODE</span><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<div class="info-box">TextMeshPro を使って HP と残弾数をリアルタイム表示します。</div>
+<p><strong>保存先:</strong> <code>Assets/Scripts/UI/HUDManager.cs</code></p>
+<pre><span class="kw">public class</span> <span class="tp">HUDManager</span> : <span class="tp">MonoBehaviour</span>
+{
+    <span class="kw">public</span> <span class="tp">Text</span> ammoText;
+    <span class="kw">public</span> <span class="tp">Text</span> healthText;
+
+    <span class="kw">void</span> <span class="fn">Update</span>() {
+        <span class="cm">// プレイヤーの Gun / Health から値を取得して表示</span>
+        ammoText.text = <span class="st">"Ammo: "</span> + gun.currentAmmo + <span class="st">" / "</span> + gun.maxAmmo;
+        healthText.text = <span class="st">"HP: "</span> + health.currentHealth;
+    }
+}</pre>
+<div class="warn-box">🔧 <strong>User操作:</strong> Canvas に弾数・体力の Text UI を配置し、HUDManager.cs をアタッチして各参照をセット</div>
+</div>
+</div>
+</div>
+
+<!-- ========== Phase 7 ========== -->
+<div class="phase" id="phase7">
+<div class="phase-header">
+<div class="phase-num">7</div>
+<h2>統合テスト・調整</h2>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">7-1</span><h3>動作確認チェックリスト</h3><span class="tag tag-user">USER</span><span class="tag tag-todo">未</span>
+</div>
+<div class="step-body">
+<div class="info-box">Unityエディタで再生し、以下の項目をすべて確認してください。</div>
+<ul>
+<li>✅ WASDで移動できる</li>
+<li>✅ マウスで視点移動できる</li>
+<li>✅ Spaceでジャンプできる</li>
+<li>✅ 左クリックで弾が発射される</li>
+<li>✅ Rキーでリロードできる（3秒かかる）</li>
+<li>✅ リロード中に再リロードできない</li>
+<li>✅ 弾が30発で撃てなくなる</li>
+<li>✅ 敵がプレイヤーを追跡する</li>
+<li>✅ 敵が攻撃範囲内で射撃する</li>
+<li>✅ プレイヤー・敵が弾に当たるとダメージを受ける</li>
+<li>✅ 体力0でオブジェクトが消滅する</li>
+<li>✅ プレイヤー死亡でゲームオーバー画面が表示される</li>
+</ul>
+</div>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">7-2</span><h3>パラメータ調整</h3><span class="tag tag-user">USER</span><span class="tag tag-todo">未</span>
+</div>
+<div class="step-body">
+<div class="info-box">Inspectorで各種パラメータを調整し、ゲームバランスを整えましょう。</div>
+<table style="width:100%;border-collapse:collapse;margin:.75rem 0;font-size:.88rem">
+<thead><tr style="border-bottom:2px solid var(--border);text-align:left">
+<th style="padding:.5rem;color:var(--accent)">パラメータ</th>
+<th style="padding:.5rem;color:var(--accent)">スクリプト</th>
+<th style="padding:.5rem;color:var(--accent)">推奨値</th>
+</tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">移動速度</td><td style="padding:.4rem .5rem">PlayerMovement</td><td style="padding:.4rem .5rem">5</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">ジャンプ力</td><td style="padding:.4rem .5rem">PlayerMovement</td><td style="padding:.4rem .5rem">5</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">マウス感度</td><td style="padding:.4rem .5rem">MouseLook</td><td style="padding:.4rem .5rem">100</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">弾速</td><td style="padding:.4rem .5rem">Bullet</td><td style="padding:.4rem .5rem">40</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">弾ダメージ</td><td style="padding:.4rem .5rem">Bullet</td><td style="padding:.4rem .5rem">10</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">リロード時間</td><td style="padding:.4rem .5rem">Gun</td><td style="padding:.4rem .5rem">3秒</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">敵攻撃範囲</td><td style="padding:.4rem .5rem">EnemyAI</td><td style="padding:.4rem .5rem">10</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">敵攻撃間隔</td><td style="padding:.4rem .5rem">EnemyAI</td><td style="padding:.4rem .5rem">1秒</td></tr>
+<tr><td style="padding:.4rem .5rem">体力</td><td style="padding:.4rem .5rem">Health</td><td style="padding:.4rem .5rem">100</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ========== Debug Section ========== -->
+<div class="phase" id="debug">
+<div class="phase-header">
+<div class="phase-num" style="background:linear-gradient(135deg,var(--accent3),var(--red))">🔧</div>
+<h2>デバッグ・調整済み項目</h2>
+</div>
+
+<div class="step">
+<div class="step-head" onclick="toggle(this)">
+<span class="num">D</span><h3>既知の問題と対処法</h3><span class="tag tag-done">済</span>
+</div>
+<div class="step-body">
+<table style="width:100%;border-collapse:collapse;margin:.75rem 0;font-size:.88rem">
+<thead><tr style="border-bottom:2px solid var(--border);text-align:left">
+<th style="padding:.5rem;color:var(--accent3)">問題</th>
+<th style="padding:.5rem;color:var(--accent3)">対処法</th>
+</tr></thead>
+<tbody>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">CharacterControllerの不一致</td><td style="padding:.4rem .5rem">ビジュアルと当たり判定のズレを調整</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">ジャンプ不良</td><td style="padding:.4rem .5rem">controller.isGrounded の安定化（水平・垂直Moveを一回に集約）</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem">Input Systemエラー</td><td style="padding:.4rem .5rem">Input.GetAxis からポーリング方式への移行</td></tr>
+<tr><td style="padding:.4rem .5rem">マズルフラッシュの見た目</td><td style="padding:.4rem .5rem">散弾状から「爆発風」へパーティクル設定調整</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<footer>
+FPSゲーム作成手順ガイド — 最終更新: 2026-02-25
+</footer>
+
+</div>
+
+<script>
+function toggle(el){el.parentElement.classList.toggle('open')}
+document.querySelectorAll('.step').forEach(s=>{
+  s.querySelector('.step-head').addEventListener('click',()=>{});
+});
+</script>
+</body>
+</html>
